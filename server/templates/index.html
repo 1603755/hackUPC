@@ -1,41 +1,18 @@
-<html>
+<!DOCTYPE html>
+<html lang="ca">
 <head>
-    <title>Home</title>
-    <link rel="stylesheet" type="text/css" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <title>Joc Web</title>
+  <style>
+    canvas {
+      border: 1px solid black;
+    }
+  </style>
 </head>
 <body>
-    <div id="content">
-        <div id="main">
-            <div id="welcome">
-                <h2>Welcome to our website</h2>
-                <p>Here you can find all the information you need about our company.</p>
-            </div>
-            <div id="featured">
-                <img src="images/featured.jpg" alt="">
-                <p>Here you can find all the information you need about our company.</p>
-            </div>
-        </div>
-        <div id="sidebar">
-            <div id="news" class="boxed">
-                <h2>News</h2>
-                <ul>
-                    <li><a href="#">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</a></li>
-                    <li><a href="#">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</a></li>
-                    <li><a href="#">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</a></li>
-                    <li><a href="#">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</a></li>
-                    <li><a href="#">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</a></li>
-                </ul>
-            </div>
-            <div id="updates" class="boxed">
-                <h2>Updates</h2>
-                <ul>
-                    <li><a href="#">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</a></li>
-                    <li><a href="#">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</a></li>
-                    <li><a href="#">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</a></li>
-                    <li><a href="#">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</a></li>
-                </ul>
-            </div>
-        </div>
-    </div>
+  <canvas id="canvas" width="800" height="600"></canvas>
 </body>
 </html>
+<script src="/static/js/scripts.js"></script>
