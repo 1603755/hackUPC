@@ -7,13 +7,13 @@ sudo pip3 install flask, numpy, pandas
 sudo apt install git
 git clone https://github.com/1603755/hackUPC.git
 cd ~
-sudo ln -sT ~/server /var/www/html/hackUPC
+sudo ln -sT ~/server /var/www/html/hackUPC/server
 
 data= head -13 /etc/apache2/sites-enabled/000-default.conf
 data+= "WSGIDaemonProcess server threads=5
         WSGIScriptAlias / /var/www/html/server/server.wsgi
         WSGIApplicationGroup %{GLOBAL}
-        <Directory flaskapp>
+        <Directory server>
              WSGIProcessGroup server
              WSGIApplicationGroup %{GLOBAL}
              Order deny,allow
