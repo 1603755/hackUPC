@@ -1,17 +1,25 @@
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 import threading
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request
 import socket
 import random
 app = Flask(__name__)
 
 # Create class MAP
 class User:
-    def __init__(self, id, id_planes):
-        self.ids = id
-        self.planes = id_planes
+    def __init__(self, id, planes):
+        self.id = id
+        self.planes = planes
     def get_user_id(self):
         return self.id
+    def toJSON(self):
+        planes = []
+        for plane in self.planes:
+            planes.append(plane.toJSON())
+        return {
+            'id': self.id,
+            'planes': planes
+        }
 class Plane:
     def __init__(self, x, y, direction, id, number):
         self.x = x
@@ -23,38 +31,41 @@ class Plane:
         return {
             'x': self.x,
             'y': self.y,
-            'direction': self.direction,
+            'direction': {'x': self.direction["x"], 'y': self.direction["y"]},
             'id': self.id,
             'number': self.number
         }
 
 class Map:
-    def __init__(self, planes, users):
-        self.planes = planes
+    def __init__(self, users):
         self.users = users
     def get_users_id(self):
         ids = []
         for user in self.users:
             ids.append(user.get_user_id())
         return ids
-    def get_planes_num(self):
-        planes_num = []
-        for plane in self.planes:
-            planes_num.append(plane.number)
-        return planes_num
+    def toJSON(self):
+        users = []
+        for user in self.users:
+            users.append(user.toJSON())
+        return {
+            'users': users
+        }
+
 class App:
     def __init__(self, map):
         self.map = map
     def get_map(self):
         return self.map
             
-game = App(Map([], []))
+game = App(Map([]))
 
 def get_local_ip():
     return socket.gethostbyname(socket.gethostname())
 @app.route('/handle_client', methods=['POST'])
 def handle_client():
     data = request.get_json()
+    print(data)
     if data["id"] not in game.map.get_users_id():
         planes = []
         planes.append(Plane(data["x"], data["y"], data["direction"], data["id"], data["number"]))
@@ -72,10 +83,11 @@ def handle_client():
                 if not trobat:
                     user.planes.append(Plane(data["x"], data["y"], data["direction"], data["id"], data["number"]))
     data = {
-        'User_Token': jsonify(user_id),
-        'Map': jsonify(self.map)
+        'User_Token': id,
+        'Map': game.map.toJSON()
     }
-    return jsonify(data)
+    print(data)
+    return data
 @app.route('/')
 def index():
     return render_template('index.html')

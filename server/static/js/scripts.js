@@ -7,6 +7,8 @@ var joc = {
   objectes: []
 };
 
+id = Math.floor(Math.random() * 1000000000);
+num_airplanes = 0;
 // Variables para capturar el path del ratón
 var path = [];
 var seguirPath = false;
@@ -112,10 +114,9 @@ function actualitzaJoc() {
     }
   }
 }
-
 async function moureObjecte(objecte) {
   var timestamp = new Date().getTime();
-  if (timestamp % 10 == 0) {
+  if (timestamp % 300 <= 20) {
     try {
       // Get the current position
       const currentPosition = {
@@ -136,6 +137,24 @@ async function moureObjecte(objecte) {
       });
 
       const updatedPositionData = await response.json();
+      var planes = []
+      for (user in updatedPositionData["Map"]["users"]){
+        for (plane in user["planes"]){
+          plane["path"] = []
+          plane["agafat"]  = false
+        }
+        planes.concat(plane)
+      }
+      for (plane in joc.objectes){
+        for (new_plane in planes){
+          if(new_plane.id == plane.id && new_plane.num_airplanes == plane.num_airplanes){
+            new_plane["path"] = plane["path"]
+            new_plane["agafat"]  = plane["agafat"] 
+          }
+        }
+      }
+      joc.objectes = []
+      joc.objectes = planes
 
       // You can access the updated position properties like updatedPositionData.x, updatedPositionData.y, etc.
     } catch (error) {
@@ -169,7 +188,7 @@ async function moureObjecte(objecte) {
 
 async function moureObjecteAleatori(objecte) {
   var timestamp = new Date().getTime();
-  if (timestamp % 10 == 0) {
+  if (timestamp % 300 <= 20) {
     try {
       // Get the current position
       const currentPosition = {
