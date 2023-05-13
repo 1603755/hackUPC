@@ -10,9 +10,6 @@ var joc = {
 // Variables para capturar el path del ratón
 var path = [];
 var seguirPath = false;
-//Create a var id that has num aleatori
-var id = Math.floor(Math.random() * 1000) + 1;
-var num_airplanes = 0;
 
 function inicialitzaJoc() {
   canvas.addEventListener("mousemove", capturarPath);
@@ -49,11 +46,9 @@ function generarObjecteAleatori() {
     y = 300
     direccio = { x: 1, y: 0 };
   }
-  if (joc.objectes.length == 0) {
-    var objecte = { x: x, y: y, agafat: false, path: [], direccio: direccio, id: id, number: num_airplanes};
-    joc.objectes.push(objecte);
-  } 
-  
+
+  var objecte = { x: x, y: y, agafat: false, path: [], direccio: direccio };
+  joc.objectes.push(objecte);
 }
 
 function capturarPath(event) {
@@ -117,36 +112,7 @@ function actualitzaJoc() {
   }
 }
 
-async function moureObjecte(objecte) {
-  var timestamp = new Date().getTime();
-  if (timestamp % 100 <= 10) {
-    try {
-      // Get the current position
-      console.log(objecte)
-      const currentPosition = {
-          x: objecte.x,
-          y: objecte.y,
-          direction: objecte.direccio,
-          id: id,
-          number: num_airplanes
-      };
-      console.log("curr pos", currentPosition)
-      // Make an asynchronous POST request to the Flask route to update the position
-      const response = await fetch('/handle_client', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(currentPosition)
-      });
-
-      const updatedPositionData = await response.json();
-
-      // You can access the updated position properties like updatedPositionData.x, updatedPositionData.y, etc.
-    } catch (error) {
-        console.error('Error:', error);
-    }
-  }
+function moureObjecte(objecte) {
   if (objecte.path.length > 0) {
     var desti = objecte.path[0];
     var velocitat = 2; // Velocidad de movimiento del objeto
@@ -170,58 +136,9 @@ async function moureObjecte(objecte) {
   } else {
     moureObjecteAleatori(objecte);
   }
-
 }
 
-async function moureObjecteAleatori(objecte) {
-  var timestamp = new Date().getTime();
-  if (timestamp % 100 <= 10) {
-    try {
-      // Get the current position
-      console.log(objecte)
-      const currentPosition = {
-          x: objecte.x,
-          y: objecte.y,
-          direction: objecte.direccio,
-          id: id,
-          number: num_airplanes
-      };
-      console.log("curr pos", currentPosition)
-      // Make an asynchronous POST request to the Flask route to update the position
-      const response = await fetch('/handle_client', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(currentPosition)
-      });
-
-      const updatedPositionData = await response.json();
-
-      //Check if the airplane 
-      for (user in updatedPositionData["Map"]["users"]) {
-        console.log("Planes", user)
-        for (airplane in user){
-          if (airplane["id"] != id) {
-            
-            var objecte = { x: airplane["x"], y: airplane["y"], agafat: false, path: [], direccio: airplane["direction"], id: user["id"], number: airplane["number"]};
-            joc.objectes.push(objecte);
-          }
-          if (airplane["id"] == id && airplane.number != num_airplanes) {
-            var objecte = { x: airplane["x"], y: airplane["y"], agafat: false, path: [], direccio: airplane["direction"], id: user["id"], number: airplane["number"]};
-            joc.objectes.push(objecte);
-          }
-        }
-      }
-      console.log(joc.objectes.length)
-
-      // Process the updated position data
-      console.log(updatedPositionData);
-      // You can access the updated position properties like updatedPositionData.x, updatedPositionData.y, etc.
-    } catch (error) {
-        console.error('Error:', error);
-    }
-  }
+function moureObjecteAleatori(objecte) {
   var velocitat = 2; // Velocidad de movimiento del objeto
 
   objecte.x += objecte.direccio.x * velocitat;
