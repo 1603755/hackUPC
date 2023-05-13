@@ -30,6 +30,10 @@ class Plane:
         self.direction = direction
         self.id = id
         self.number = number
+    def set_x(self, x):
+        self.x = x
+    def set_y(self, y):
+        self.y = y
     def toJSON(self):
         return {
             'x': self.x,
@@ -73,6 +77,7 @@ def get_local_ip():
 @app.route('/handle_client', methods=['POST'])
 def handle_client():
     data = request.get_json()
+    print(data)
     if data["id"] not in game.map.get_users_id():
         planes = []
         planes.append(Plane(data["x"], data["y"], data["direction"], data["id"], data["number"]))
@@ -83,8 +88,8 @@ def handle_client():
                 trobat = False
                 for plane in user.planes:
                     if plane.number == data["number"]:
-                        plane.x = data["x"]
-                        plane.y = data["y"]
+                        plane.set_x(data["x"])
+                        plane.set_y(data["y"])
                         plane.direction = data["direction"]
                         trobat = True
                 if not trobat:

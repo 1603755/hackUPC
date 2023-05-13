@@ -44,11 +44,15 @@ function generarObjecteAleatori() {
     x = Math.floor(Math.random() * canvas.width);
     y = canvas.height;
     direccio = { x: 0, y: -1 };
+  } else {
+    x = 400
+    y = 300
+    direccio = { x: 1, y: 0 };
   }
   if (joc.objectes.length == 0) {
     var objecte = { x: x, y: y, agafat: false, path: [], direccio: direccio, id: id, number: num_airplanes};
     joc.objectes.push(objecte);
-  }
+  } 
   
 }
 
@@ -77,8 +81,6 @@ function agafaObjecte(event) {
         objecte.agafat = true;
         seguirPath = true;
         path = [{ x: mouseX, y: mouseY }];
-
-
         objecte.path = path;  //modifico
 
         break;
@@ -107,8 +109,7 @@ function bucleJoc() {
 
 function actualitzaJoc() {
   for (var i = 0; i < joc.objectes.length; i++) {
-    var objecte = joc.objectes[i];
-    if (objecte.path.length > 0) {
+    if (joc.objectes[i].path.length > 0) {
       moureObjecte(objecte);
     } else {
       moureObjecteAleatori(objecte);
@@ -118,9 +119,10 @@ function actualitzaJoc() {
 
 async function moureObjecte(objecte) {
   var timestamp = new Date().getTime();
-  if (timestamp % 10 == 0) {
+  if (timestamp % 100 <= 10) {
     try {
       // Get the current position
+      console.log(objecte)
       const currentPosition = {
           x: objecte.x,
           y: objecte.y,
@@ -128,7 +130,7 @@ async function moureObjecte(objecte) {
           id: id,
           number: num_airplanes
       };
-
+      console.log("curr pos", currentPosition)
       // Make an asynchronous POST request to the Flask route to update the position
       const response = await fetch('/handle_client', {
           method: 'POST',
@@ -173,9 +175,10 @@ async function moureObjecte(objecte) {
 
 async function moureObjecteAleatori(objecte) {
   var timestamp = new Date().getTime();
-  if (timestamp % 10 == 0) {
+  if (timestamp % 100 <= 10) {
     try {
       // Get the current position
+      console.log(objecte)
       const currentPosition = {
           x: objecte.x,
           y: objecte.y,
@@ -183,7 +186,7 @@ async function moureObjecteAleatori(objecte) {
           id: id,
           number: num_airplanes
       };
-
+      console.log("curr pos", currentPosition)
       // Make an asynchronous POST request to the Flask route to update the position
       const response = await fetch('/handle_client', {
           method: 'POST',
@@ -266,4 +269,3 @@ function dibuixaJoc() {
 
 // Inicializamos el juego cuando la página se ha cargado completamente
 window.addEventListener("load", inicialitzaJoc);
-
