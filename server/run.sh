@@ -20,6 +20,6 @@ data+= "WSGIDaemonProcess server threads=5
              Allow from all 
         </Directory>"
 data+= tail -14 /etc/apache2/sites-enabled/000-default.conf 
-echo $data > /etc/apache2/sites-enabled/000-default.conf
+sudp echo $data > /etc/apache2/sites-enabled/000-default.conf
 sudo service apache2 restart
 
