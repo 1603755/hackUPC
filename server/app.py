@@ -19,6 +19,14 @@ class Plane:
         self.direction = direction
         self.id = id
         self.number = number
+    def toJSON(self):
+        return {
+            'x': self.x,
+            'y': self.y,
+            'direction': self.direction,
+            'id': self.id,
+            'number': self.number
+        }
 
 class Map:
     def __init__(self, planes, users):
@@ -47,17 +55,22 @@ def get_local_ip():
 @app.route('/handle_client', methods=['POST'])
 def handle_client():
     data = request.get_json()
-    if not game.map.get_users_id().contains(data["id"]):
-        game.map.users.append(User(data["id"], []))
-    if not game.map.get_planes_num().contains(data["number"]):
-        game.map.planes.append(Plane(data["x"], data["y"], data["direction"], data["id"], data["number"]))
+    if data["id"] not in game.map.get_users_id():
+        planes = []
+        planes.append(Plane(data["x"], data["y"], data["direction"], data["id"], data["number"]))
+        game.map.users.append(User(data["id"], planes))
     else:
-        for plane in game.map.planes:
-            if plane.number == data["number"]:
-                plane.x = data["x"]
-                plane.y = data["y"]
-                plane.direction = data["direction"]
-
+        for user in game.map.users:
+            if user.id == data["id"]:
+                trobat = False
+                for plane in user.planes:
+                    if plane.number == data["number"]:
+                        plane.x = data["x"]
+                        plane.y = data["y"]
+                        plane.direction = data["direction"]
+                        trobat = True
+                if not trobat:
+                    user.planes.append(Plane(data["x"], data["y"], data["direction"], data["id"], data["number"]))
     data = {
         'User_Token': jsonify(user_id),
         'Map': jsonify(self.map)
