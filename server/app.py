@@ -13,12 +13,15 @@ class User:
     def get_user_id(self):
         return self.id
     def toJSON(self):
-        planes = []
+        planes = {}
+        i = 0
         for plane in self.planes:
-            planes.append(plane.toJSON())
+            planes[str(i)] = plane.toJSON()
+            i += 1
+        print(planes)
         return {
-            'id': self.id,
-            'planes': planes
+            "id": self.id,
+            "planes": planes
         }
 class Plane:
     def __init__(self, x, y, direction, id, number):
@@ -29,11 +32,11 @@ class Plane:
         self.number = number
     def toJSON(self):
         return {
-            'x': self.x,
-            'y': self.y,
-            'direction': {'x': self.direction["x"], 'y': self.direction["y"]},
-            'id': self.id,
-            'number': self.number
+            "x": self.x,
+            "y": self.y,
+            "direction": self.direction,
+            "id": self.id,
+            "number": self.number
         }
 
 class Map:
@@ -45,11 +48,14 @@ class Map:
             ids.append(user.get_user_id())
         return ids
     def toJSON(self):
-        users = []
+        users = {}
+        i = 0
         for user in self.users:
-            users.append(user.toJSON())
+            users[str(i)] = user.toJSON()
+            i += 1
+        print(users)
         return {
-            'users': users
+            "users": users
         }
 
 class App:
@@ -81,10 +87,10 @@ def handle_client():
                         plane.direction = data["direction"]
                         trobat = True
                 if not trobat:
-                    user.planes.append(Plane(data["x"], data["y"], data["direction"], data["id"], data["number"]))
+                    user.planes.append(Plane(data["x"], data["y"], [data["direction"]["x"],data["direction"]["y"]], data["id"], data["number"]))
     data = {
-        'User_Token': id,
-        'Map': game.map.toJSON()
+        "User_Token": data["id"],
+        "Map": game.map.toJSON()
     }
     print(data)
     return data

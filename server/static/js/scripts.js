@@ -1,4 +1,5 @@
 // Obtén el canvas y el contexto
+
 var canvas = document.getElementById("canvas");
 var context = canvas.getContext("2d");
 
@@ -24,31 +25,12 @@ function inicialitzaJoc() {
 }
 
 function generarObjecteAleatori() {
-  var x, y, direccio;
-
-  var costat = Math.floor(Math.random() * 4) + 1;
-  if (costat === 1) {
-    x = 0;
-    y = Math.floor(Math.random() * canvas.height);
-    direccio = { x: 1, y: 0 };
-  } else if (costat === 2) {
-    x = Math.floor(Math.random() * canvas.width);
-    y = 0;
-    direccio = { x: 0, y: 1 };
-  } else if (costat === 3) {
-    x = canvas.width;
-    y = Math.floor(Math.random() * canvas.height);
-    direccio = { x: -1, y: 0 };
-  } else if (costat === 4) {
-    x = Math.floor(Math.random() * canvas.width);
-    y = canvas.height;
-    direccio = { x: 0, y: -1 };
-  }
-  if (joc.objectes.length == 0) {
-    var objecte = { x: x, y: y, agafat: false, path: [], direccio: direccio, id: id, number: num_airplanes};
-    joc.objectes.push(objecte);
-  }
-  
+  var x, y, direction;
+  x = 400
+  y = 300
+  direction = {x: Math.floor(Math.random() * 2) - 1, y: Math.floor(Math.random() * 2) - 1}
+  var objecte = { x: x, y: y, agafat: false, path: [], direction: direction, id: id, number: num_airplanes};
+  joc.objectes.push(objecte);
 }
 
 function capturarPath(event) {
@@ -69,9 +51,9 @@ function agafaObjecte(event) {
       var objecte = joc.objectes[i];
       if (
         mouseX >= objecte.x &&
-        mouseX <= objecte.x + 20 &&
+        mouseX <= objecte.x + 40 && //20
         mouseY >= objecte.y &&
-        mouseY <= objecte.y + 20
+        mouseY <= objecte.y + 40
       ) {
         objecte.agafat = true;
         seguirPath = true;
@@ -105,56 +87,68 @@ function bucleJoc() {
 }
 
 function actualitzaJoc() {
+  console.log("OBJECTES: ", joc.objectes)
   for (var i = 0; i < joc.objectes.length; i++) {
-    var objecte = joc.objectes[i];
-    if (objecte.path.length > 0) {
-      moureObjecte(objecte);
-    } else {
-      moureObjecteAleatori(objecte);
-    }
+      var objecte = joc.objectes[i.toString()];
+      if (objecte["id"] == id ){
+        if (objecte["path"].length > 0) {
+          moureObjecte(objecte);
+        } else {
+          moureObjecteAleatori(objecte);
+        }
+      }
   }
 }
 async function moureObjecte(objecte) {
   var timestamp = new Date().getTime();
-  if (timestamp % 300 <= 20) {
+  if (timestamp % 50 <= 5) {
     try {
       // Get the current position
-      const currentPosition = {
-          x: objecte.x,
-          y: objecte.y,
-          direction: objecte.direccio,
-          id: id,
-          number: num_airplanes
-      };
-
-      // Make an asynchronous POST request to the Flask route to update the position
-      const response = await fetch('/handle_client', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(currentPosition)
+      const data = {
+        direction: {x: objecte["direction"]["x"], y: objecte["direction"]["y"]},
+        x: objecte.x,
+        y: objecte.y,
+        id: id,
+        number: num_airplanes
+    };
+    console.log("CURRENT POSITION: ", data)
+    // Make an asynchronous POST request to the Flask route to update the position
+    const response = await fetch('/handle_client', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    });
+    const updatedPositionData = await response.json();
+    var planes = []
+    var i=0
+    for (user in updatedPositionData["Map"]["users"]){
+      var j=0
+      for (plane in updatedPositionData["Map"]["users"][i.toString()]["planes"]){
+        
+        updatedPositionData["Map"]["users"][i.toString()]["planes"][j.toString()]["path"] = []
+        updatedPositionData["Map"]["users"][i.toString()]["planes"][j.toString()]["agafat"]  = false
+        
+        planes.push(updatedPositionData["Map"]["users"][i.toString()]["planes"][j.toString()])
+        j+=1
+      }
+      i+=1
+    }
+    console.log("PLANES BEFORE: ", joc.objectes)
+    console.log("PLANES AFTER: ", planes)
+    joc.objectes.forEach((plane) => {
+      planes.forEach((new_plane) => {
+        var i = 0
+        if(new_plane.id == planes[i.toString()].id && new_plane.num_airplanes == planes[i.toString()].num_airplanes){
+          new_plane["path"] = plane["path"]
+          new_plane["agafat"]  = plane["agafat"] 
+        }
+        i+=1
       });
-
-      const updatedPositionData = await response.json();
-      var planes = []
-      for (user in updatedPositionData["Map"]["users"]){
-        for (plane in user["planes"]){
-          plane["path"] = []
-          plane["agafat"]  = false
-        }
-        planes.concat(plane)
-      }
-      for (plane in joc.objectes){
-        for (new_plane in planes){
-          if(new_plane.id == plane.id && new_plane.num_airplanes == plane.num_airplanes){
-            new_plane["path"] = plane["path"]
-            new_plane["agafat"]  = plane["agafat"] 
-          }
-        }
-      }
-      joc.objectes = []
-      joc.objectes = planes
+    });
+    joc.objectes = []
+    joc.objectes = planes
 
       // You can access the updated position properties like updatedPositionData.x, updatedPositionData.y, etc.
     } catch (error) {
@@ -163,16 +157,13 @@ async function moureObjecte(objecte) {
   }
   if (objecte.path.length > 0) {
     var desti = objecte.path[0];
-    var velocitat = 2; // Velocidad de movimiento del objeto
-
+    var velocitat = 2; 
     var dx = desti.x - objecte.x;
     var dy = desti.y - objecte.y;
     var distancia = Math.sqrt(dx * dx + dy * dy);
     var angle = Math.atan2(dy, dx);
-
     var velocitatX = Math.cos(angle) * velocitat;
     var velocitatY = Math.sin(angle) * velocitat;
-
     if (distancia <= velocitat) {
       objecte.x = desti.x;
       objecte.y = desti.y;
@@ -188,47 +179,56 @@ async function moureObjecte(objecte) {
 
 async function moureObjecteAleatori(objecte) {
   var timestamp = new Date().getTime();
-  if (timestamp % 300 <= 20) {
+  if (timestamp % 50 <= 5) {
     try {
       // Get the current position
-      const currentPosition = {
+      console.log("OBJECTE: ", objecte)
+      //objecte["direccio"] = {x: 1, y: 0}
+      const data = {
+          direction: {x: objecte["direction"]["x"], y: objecte["direction"]["y"]},
           x: objecte.x,
           y: objecte.y,
-          direction: objecte.direccio,
           id: id,
           number: num_airplanes
       };
-
+      console.log("CURRENT POSITION: ", data)
       // Make an asynchronous POST request to the Flask route to update the position
       const response = await fetch('/handle_client', {
           method: 'POST',
           headers: {
               'Content-Type': 'application/json'
           },
-          body: JSON.stringify(currentPosition)
+          body: JSON.stringify(data)
       });
-
       const updatedPositionData = await response.json();
-
-      //Check if the airplane 
-      for (user in updatedPositionData["Map"]["users"]) {
-        console.log("Planes", user)
-        for (airplane in user){
-          if (airplane["id"] != id) {
-            
-            var objecte = { x: airplane["x"], y: airplane["y"], agafat: false, path: [], direccio: airplane["direction"], id: user["id"], number: airplane["number"]};
-            joc.objectes.push(objecte);
-          }
-          if (airplane["id"] == id && airplane.number != num_airplanes) {
-            var objecte = { x: airplane["x"], y: airplane["y"], agafat: false, path: [], direccio: airplane["direction"], id: user["id"], number: airplane["number"]};
-            joc.objectes.push(objecte);
-          }
+      var planes = []
+      var i=0
+      for (user in updatedPositionData["Map"]["users"]){
+        var j=0
+        for (plane in updatedPositionData["Map"]["users"][i.toString()]["planes"]){
+          
+          updatedPositionData["Map"]["users"][i.toString()]["planes"][j.toString()]["path"] = []
+          updatedPositionData["Map"]["users"][i.toString()]["planes"][j.toString()]["agafat"]  = false
+          
+          planes.push(updatedPositionData["Map"]["users"][i.toString()]["planes"][j.toString()])
+          j+=1
         }
+        i+=1
       }
-      console.log(joc.objectes.length)
-
-      // Process the updated position data
-      console.log(updatedPositionData);
+      console.log("PLANES BEFORE: ", joc.objectes)
+      console.log("PLANES AFTER: ", planes)
+      joc.objectes.forEach((plane) => {
+        planes.forEach((new_plane) => {
+          var i = 0
+          if(new_plane.id == planes[i.toString()].id && new_plane.num_airplanes == planes[i.toString()].num_airplanes){
+            new_plane["path"] = plane["path"]
+            new_plane["agafat"]  = plane["agafat"] 
+          }
+          i+=1
+        });
+      });
+      joc.objectes = []
+      joc.objectes = planes
       // You can access the updated position properties like updatedPositionData.x, updatedPositionData.y, etc.
     } catch (error) {
         console.error('Error:', error);
@@ -236,8 +236,8 @@ async function moureObjecteAleatori(objecte) {
   }
   var velocitat = 2; // Velocidad de movimiento del objeto
 
-  objecte.x += objecte.direccio.x * velocitat;
-  objecte.y += objecte.direccio.y * velocitat;
+  objecte.x += objecte.direction.x * velocitat;
+  objecte.y += objecte.direction.y * velocitat;
 
   if (
     objecte.x < 0 ||
@@ -261,7 +261,7 @@ function dibuixaJoc() {
     var objecte = joc.objectes[i];
     context.beginPath();
     context.rect(objecte.x, objecte.y, 20, 20);
-    context.fillStyle = "red";
+    context.fillStyle = "green";
     context.fill();
     context.closePath();
   }
